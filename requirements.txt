@@ -1,0 +1,5 @@
+evadb
+pandas
+faiss-cpu
+tqdm
+sentence-transfomers

@@ -1,5 +1,5 @@
 def read():
-    path = "train.csv"
+    path = "/Users/chitti/Desktop/GitHub/langcache/test/train.csv"
     with open(path) as f:
         for i, line in enumerate(f.read().splitlines()):
             if i == 0:

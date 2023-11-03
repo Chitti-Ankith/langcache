@@ -1,5 +1,6 @@
 import random
 
+from time import perf_counter
 from tqdm import tqdm
 from collections import defaultdict
 
@@ -43,12 +44,18 @@ random.shuffle(qid_list)
 
 train_qid_list, test_qid_list = set(qid_list[:split_idx]), set(qid_list[split_idx:])
 
-cache = Cache(tune_frequency=0, tune_policy="recall")
+cache = Cache(name="JJJK", tune_frequency=4, tune_policy="recall")
+cache.purge()
+
+cache_insert_start = perf_counter()
 for train_qid in tqdm(train_qid_list):
     # Insert cache.
     cache.put(id_to_question[train_qid], str(train_qid))
 
-tp, fn, fp = 0, 0, 0
+cache_insert_end = perf_counter()
+print(f"Insertion Time: {(cache_insert_end - cache_insert_start) * 1000:.3f} ms")
+
+tp, fn, fp, tn = 0, 0, 0, 0
 for i, test_qid in tqdm(enumerate(test_qid_list)):
     # Test tuning.
     if i % 5 == 0:
@@ -71,7 +78,12 @@ for i, test_qid in tqdm(enumerate(test_qid_list)):
         similar_qid_list = similarity_question[test_qid]
         if len(similar_qid_list & train_qid_list) != 0:
             fn += 1
+        else:
+            tn += 1
+
+print(f"Evaluation Time: {(perf_counter() - cache_insert_end) * 1000:.3f} ms")
+cache.purge()
 
 print("Precision", tp / (tp + fp))
 print("Recall", tp / (tp + fn))
-print("TP FN FP", tp, fn, fp)
+print("TP FN FP TN", tp, fn, fp, tn)

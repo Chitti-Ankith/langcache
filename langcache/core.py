@@ -41,6 +41,7 @@ class Cache:
         else:
             self.cache_name = self._generate_random_name()
         self.init = False
+        print("Cache name :", self.cache_name)
 
         # Threshold distance and tuning hyper-parameter.
         self.distance_threshold = 4
@@ -50,6 +51,8 @@ class Cache:
 
         # Statistics.
         self.stats_list = []
+
+        openai.api_key = os.getenv("OPENAI_API_KEY")
 
     def _replace_str(self, string: str):
         replace_list = [
@@ -166,3 +169,22 @@ class Cache:
                 INSERT INTO {self.cache_name} (key, value) VALUES ("{key}", "{value}")
             """
             ).df()
+
+    def purge(self):
+        if self.init:
+            print("Purging cache tables")
+            self.cursor.query(
+                f"""
+                DROP TABLE IF EXISTS {self.cache_name}
+            """
+            ).df()
+
+            self.cursor.query(
+                f"""
+                DROP INDEX IF EXISTS {self.cache_name}
+            """
+            ).df()
+
+
+
+        
